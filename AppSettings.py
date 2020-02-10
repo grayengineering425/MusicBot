@@ -14,7 +14,8 @@ class AppSettings():
 
         #SPOTIFY SETTINGS
         self.spotifyAccessToken      = config["SPOTIFY"]["accessToken"  ]
-        self.spotifyRefreshToken     = config["SPOTIFY"]["accessToken"  ]
+        self.spotifyRefreshToken     = config["SPOTIFY"]["refreshToken" ]
+        self.spotifyClientSecret     = config["SPOTIFY"]["clientSecret" ]
         self.spotifyUserId           = config["SPOTIFY"]["userId"       ]
         self.spotifyPlaylistId       = config["SPOTIFY"]["playlistId"   ]
 

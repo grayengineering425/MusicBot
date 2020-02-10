@@ -37,12 +37,15 @@ class Server:
 
         displayName = self.chat.getDisplayName(userId)
         
-        message     = "Hello @" + displayName + ", nice to meet you!"
+        message     = "Hello @" + displayName + ", nice to meet you! Use /musicbotinfo to learn more about me!"
         status      = self.chat.sendMessage     (channel, message)
 
     def handleLinkPosted(self, payload):
         channel = payload['channel' ]
         userId  = payload['user'    ]
+
+        if self.chat.checkInChannel(channel) == False:
+            return
 
         urls = []
 
@@ -55,9 +58,12 @@ class Server:
             if domain == "open.spotify.com":
                 urls.append(url)
 
-        for url in urls:
-            self.spotify.postSongToPlaylist(url)
+        success = True
 
-        displayName = self.chat.getDisplayName(userId)
-        message     = "Hello @" + displayName + ", I have archived this song for you! You can find the link using the /spotify command!"
-        status      = self.chat.sendMessage     (channel, message)
+        for url in urls:
+            success = self.spotify.postSongToPlaylist(url)
+
+        if success == True:
+            displayName = self.chat.getDisplayName(userId)
+            message     = "Hello @" + displayName + ", I have archived this song for you! You can find the link using the /spotify command!"
+            status      = self.chat.sendMessage     (channel, message)

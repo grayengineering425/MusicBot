@@ -2,6 +2,7 @@ from AppSettings import AppSettings
 
 import requests
 import enum
+import json
 
 class ErrorCodes(enum.Enum):
     TokenExpired = "The access token has expired"
@@ -10,9 +11,33 @@ class SpotifyApi():
     def __init__(self, appSettings):
         self.baseUrl            = "https://api.spotify.com/v1/"
         self.appSettings        = appSettings
+        self.existingTracks     = {}
 
-        self.errors = {""}
+        self.getExisitingTracks();
 
+    def getExisitingTracks(self):
+        requestUrl = self.baseUrl + "playlists/" + self.appSettings.spotifyPlaylistId + '/tracks'
+        headers    = { "Authorization" : "Bearer " + self.appSettings.spotifyAccessToken }
+
+        responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
+
+        if 'error' in responseJson:
+            message = response["error"]["message"]
+
+            if message == ErrorCodes.TokenExpired:
+                self.refreshAccessCode()
+                headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
+
+                responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
+
+                if 'error' in response:
+                    return False
+
+        for item in responseJson["items"]:
+            if "track" not in item:
+                continue
+
+            self.existingTracks[item["track"]["id"]] = True
 
     def postSongToPlaylist(self, songUrl):
         trackString = "track"
@@ -23,35 +48,31 @@ class SpotifyApi():
 
         songInfo        = songUrl[startIndex + 6:]
         songInfoList    = songInfo.split('?')
-        songId          = songInfo[0]
+        songId          = songInfoList[0]
 
-        print(songId)
+        if songId in self.existingTracks:
+            return False
 
         requestUrl  = self.baseUrl + "playlists/" + self.appSettings.spotifyPlaylistId + '/tracks/'
 
-        print(requestUrl)
+        requestData = { "uris"          : ["spotify:track:" + songId] }
+        headers     = { "Authorization" : "Bearer " + self.appSettings.spotifyAccessToken }
 
-        requestData = { "playlist_id"   : songId }
-        headers     = { "Authorization" : self.appSettings.spotifyAccessToken}
+        responseJson = json.loads(requests.post(requestUrl, json=requestData, headers=headers).text)
 
-        response = requests.post(requestUrl, json=requestData, headers=headers)
-
-        print(response)
-
-        if 'error' in response:
-            message = response["error"]["message"]
+        if 'error' in responseJson:
+            message = responseJson["error"]["message"]
 
             if message == ErrorCodes.TokenExpired:
                 self.refreshAccessCode()
-                requestData ["playlist_id"  ] = songId
-                headers     ["Authorization"] = self.appSettings.spotifyAccessToken
+                headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
 
-                response = requests.post(requestUrl, json=requestData, headers=headers)
-
-                print(response)
+                responseJson = json.loads(requests.post(requestUrl, json=requestData, headers=headers).text)
 
                 if 'error' in response:
                     return False
+
+        self.existingTracks[songId] = True
 
         return True
 
@@ -62,7 +83,14 @@ class SpotifyApi():
                     }
 
         header =    {
-                        "Authorization" : "NjE0Y2Y5N2I0ZDcxNDNkMGIxOTc5OGZiODNmYmZhMWM6OWYwM2U0MGRiODM5NDhiZjk5MTBmZDA2YzMyMjRmOTE="
+                        "Authorization" : "Basic " + self.appSettings.spotifyClientSecret
                     }
 
-        response = requests.post("https://accounts.spotify.com/api/token", data, header=header)
+        responseJson = json.loads(requests.post("https://accounts.spotify.com/api/token", data, header=header).text)
+
+        if 'error' in response:
+            return
+
+        newToken = responseJson["access_token"]
+
+        self.appSettings.updateSetting("SPOTIFY", "accessToken", newToken)

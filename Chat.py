@@ -2,7 +2,6 @@ import slack
 from slack          import WebClient
 from AppSettings    import AppSettings
 
-
 import enum
 
 class Emoji(enum.Enum):
@@ -27,3 +26,16 @@ class Chat():
         response = self.client.chat_postMessage(channel=channel, text=text)
 
         return response["ok"]
+
+    def checkInChannel(self, channel):
+        response = self.client.conversations_info(channel=channel)
+
+        if response["ok"] == False:
+            return False
+
+        channelInfo = response["channel"]
+
+        if channelInfo["is_channel"] == False or channelInfo["is_member"] == False:
+            return False
+
+        return True

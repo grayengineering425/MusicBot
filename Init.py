@@ -51,8 +51,6 @@ def Event():
         return jsonify({'success': True}), 200
 
     elif eventType == 'link_shared':
-        print('someone shared a spotify link!')
-
         server.handleLinkPosted(event)
 
         return jsonify({'success': True}), 200
@@ -62,6 +60,39 @@ def Event():
 
 @app.route('/spotify', methods=['POST'])
 def slashSpotify():
+    j = {
+        "blocks": [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "https://open.spotify.com/user/yeprx0m3tflw7451xg0wqpp1x?si=n1Fd4afWSnCfWPuvFAsmOw"
+                }
+            }
+        ]
+    }
+
+    return jsonify(j), 200
+
+
+@app.route('/musicbotinfo', methods=['POST'])
+def slashMusicBotInfo():
+    j = {
+        "blocks": [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "A bot designed so you can find all the music posted here in one place\nCommands\n\t/spotify\n\t/musicbotinfo\n\t/github\nDesigned and \"tested\" by Alex Gray"
+                }
+            }
+        ]
+    }
+
+    return jsonify(j), 200
+
+@app.route('/github', methods=['POST'])
+def slashGitHub():
     print('received request!')
 
     j = {
@@ -70,7 +101,7 @@ def slashSpotify():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "https://open.spotify.com/user/yeprx0m3tflw7451xg0wqpp1x?si=n1Fd4afWSnCfWPuvFAsmOw"
+                    "text": "https://github.com/grayengineering425/MusicBot"
                 }
             }
         ]
