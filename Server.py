@@ -1,11 +1,14 @@
 from Chat           import Chat, Emoji
 from AppSettings    import AppSettings
+from SpotifyApi     import SpotifyApi
+
+import requests
 
 class Server:
     def __init__(self, appSettings):
-        self.name   = "MusicBot"
-        self.token  = appSettings.verificationToken
-        self.chat   = Chat(appSettings)
+        self.name       = "MusicBot"
+        self.chat       = Chat      (appSettings)
+        self.spotify    = SpotifyApi(appSettings)
 
     def handleAppMention(self, payload):
         channel = payload['channel' ]
@@ -37,11 +40,6 @@ class Server:
         message     = "Hello @" + displayName + ", nice to meet you!"
         status      = self.chat.sendMessage     (channel, message)
 
-        if status == True:
-            print('success')
-        else:
-            print('failure')
-
     def handleLinkPosted(self, payload):
         channel = payload['channel' ]
         userId  = payload['user'    ]
@@ -57,11 +55,9 @@ class Server:
             if domain == "open.spotify.com":
                 urls.append(url)
 
+        for url in urls:
+            self.spotify.postSongToPlaylist(url)
+
         displayName = self.chat.getDisplayName(userId)
         message     = "Hello @" + displayName + ", I have archived this song for you! You can find the link using the /spotify command!"
         status      = self.chat.sendMessage     (channel, message)
-
-        if status == True:
-            print('success')
-        else:
-            print('failure')

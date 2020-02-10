@@ -24,7 +24,7 @@ def Event():
     
     token = request.json['token']
     
-    if token != server.token:
+    if token != appSettings.slackVerificationToken:
         return jsonify({'forbidden' : "Tokens do not match"}), 403
 
     #Check the type of the message, then allow server to handle business logic based on the event

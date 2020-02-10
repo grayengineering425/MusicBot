@@ -11,7 +11,7 @@ class Emoji(enum.Enum):
 
 class Chat():
     def __init__(self, appSettings):
-        self.client = WebClient(appSettings.webclientToken)
+        self.client = WebClient(appSettings.slackWebclientToken)
 
 
     def getDisplayName(self, userId):
