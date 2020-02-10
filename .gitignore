@@ -125,3 +125,4 @@ dmypy.json
 .pyre/
 oath.ini
 bot_playground.py
+spotify_api_reference.txt
