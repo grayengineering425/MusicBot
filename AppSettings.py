@@ -4,28 +4,30 @@ class AppSettings():
     def __init__(self):
         configPath = "./oath.ini"
 
-        config = configparser.ConfigParser()
+        self.config = configparser.ConfigParser()
 
-        config.read(configPath)
-
-        #SLACK SETTINGS
-        self.slackVerificationToken  = config["SLACK"]["verificationToken"]
-        self.slackWebclientToken     = config["SLACK"]["webclientToken"   ]
-
-        #SPOTIFY SETTINGS
-        self.spotifyAccessToken      = config["SPOTIFY"]["accessToken"  ]
-        self.spotifyRefreshToken     = config["SPOTIFY"]["refreshToken" ]
-        self.spotifyClientSecret     = config["SPOTIFY"]["clientSecret" ]
-        self.spotifyUserId           = config["SPOTIFY"]["userId"       ]
-        self.spotifyPlaylistId       = config["SPOTIFY"]["playlistId"   ]
+        self.config.read(configPath)
+        self.readSettings()
 
     def updateSetting(self, section, settingId, value):
-        if section not in self.config:
+        if section not in self.config or settingId not in self.config[section]:
             return
 
-        currentSection = self.config[section]
+        self.config[section][settingId] = value
 
-        if settingId not in currentSection:
-            return
+        with open('./oath.ini', 'w') as configfile:
+            self.config.write(configfile)
 
-        currentSection[settingId] = value
+        self.readSettings()
+
+    def readSettings(self):
+        #SLACK SETTINGS
+        self.slackVerificationToken  = self.config["SLACK"]["verificationToken"]
+        self.slackWebclientToken     = self.config["SLACK"]["webclientToken"   ]
+
+        #SPOTIFY SETTINGS
+        self.spotifyAccessToken      = self.config["SPOTIFY"]["accessToken"  ]
+        self.spotifyRefreshToken     = self.config["SPOTIFY"]["refreshToken" ]
+        self.spotifyClientSecret     = self.config["SPOTIFY"]["clientSecret" ]
+        self.spotifyUserId           = self.config["SPOTIFY"]["userId"       ]
+        self.spotifyPlaylistId       = self.config["SPOTIFY"]["playlistId"   ]

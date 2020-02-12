@@ -63,7 +63,7 @@ class Server:
         for url in urls:
             success = self.spotify.postSongToPlaylist(url)
 
-        if success == True:
-            displayName = self.chat.getDisplayName(userId)
-            message     = "Hello @" + displayName + ", I have archived this song for you! You can find the link using the /spotify command!"
-            status      = self.chat.sendMessage     (channel, message)
+        #if success == True:
+        #    displayName = self.chat.getDisplayName(userId)
+        #    message     = "Hello @" + displayName + ", I have archived this song for you! You can find the link using the /spotify command!"
+        #    status      = self.chat.sendMessage     (channel, message)

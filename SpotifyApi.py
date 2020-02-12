@@ -5,7 +5,7 @@ import enum
 import json
 
 class ErrorCodes(enum.Enum):
-    TokenExpired = "The access token has expired"
+    TokenExpired = "The access token expired"
 
 class SpotifyApi():
     def __init__(self, appSettings):
@@ -22,15 +22,15 @@ class SpotifyApi():
         responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
 
         if 'error' in responseJson:
-            message = response["error"]["message"]
+            message = responseJson["error"]["message"]
 
-            if message == ErrorCodes.TokenExpired:
+            if message == "The access token expired":
                 self.refreshAccessCode()
                 headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
 
                 responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
 
-                if 'error' in response:
+                if 'error' in responseJson:
                     return False
 
         for item in responseJson["items"]:
@@ -63,13 +63,13 @@ class SpotifyApi():
         if 'error' in responseJson:
             message = responseJson["error"]["message"]
 
-            if message == ErrorCodes.TokenExpired:
+            if message == "The access token expired":
                 self.refreshAccessCode()
                 headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
 
                 responseJson = json.loads(requests.post(requestUrl, json=requestData, headers=headers).text)
 
-                if 'error' in response:
+                if 'error' in responseJson:
                     return False
 
         self.existingTracks[songId] = True
@@ -86,9 +86,9 @@ class SpotifyApi():
                         "Authorization" : "Basic " + self.appSettings.spotifyClientSecret
                     }
 
-        responseJson = json.loads(requests.post("https://accounts.spotify.com/api/token", data, header=header).text)
+        responseJson = json.loads(requests.post("https://accounts.spotify.com/api/token", data, headers=header).text)
 
-        if 'error' in response:
+        if 'error' in responseJson:
             return
 
         newToken = responseJson["access_token"]
