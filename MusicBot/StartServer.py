@@ -1,5 +1,5 @@
 from Init import app
-from os import environ
+import sys
 
 if __name__ == '__main__':
     app.run(use_reloader=True)

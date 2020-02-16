@@ -1,9 +1,15 @@
+import os
+import sys
+import datetime
+
+sys.path.append(os.getcwd() + '/Settings'       )
+sys.path.append(os.getcwd() + '/WebApis'        )
+sys.path.append(os.getcwd() + '/Localization'   )
+
 from flask          import Flask, request, jsonify
 from flask_cors     import CORS
-from Server         import Server
+from Server         import Server, SlashRequests
 from AppSettings    import AppSettings
-
-import datetime
 
 appSettings = AppSettings()
 
@@ -60,51 +66,19 @@ def Event():
 
 @app.route('/spotify', methods=['POST'])
 def slashSpotify():
-    j = {
-        "blocks": [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "https://open.spotify.com/user/yeprx0m3tflw7451xg0wqpp1x?si=n1Fd4afWSnCfWPuvFAsmOw"
-                }
-            }
-        ]
-    }
-
-    return jsonify(j), 200
+    response = server.handleSlashRequest(SlashRequests.Spotify)
+    
+    return jsonify(response), 200
 
 
 @app.route('/musicbotinfo', methods=['POST'])
 def slashMusicBotInfo():
-    j = {
-        "blocks": [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "A bot designed so you can find all the music posted here in one place\nCommands\n\t/spotify\n\t/musicbotinfo\n\t/github\nDesigned and \"tested\" by Alex Gray"
-                }
-            }
-        ]
-    }
+    response = server.handleSlashRequest(SlashRequests.MusicBotInfo)
 
-    return jsonify(j), 200
+    return jsonify(response), 200
 
 @app.route('/github', methods=['POST'])
 def slashGitHub():
-    print('received request!')
+    response = server.handleSlashRequest(SlashRequests.Github)
 
-    j = {
-        "blocks": [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "https://github.com/grayengineering425/MusicBot"
-                }
-            }
-        ]
-    }
-
-    return jsonify(j), 200
+    return jsonify(response), 200
