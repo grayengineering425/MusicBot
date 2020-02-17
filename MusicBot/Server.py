@@ -4,7 +4,7 @@ import enum
 from Chat           import Chat, Emoji
 from AppSettings    import AppSettings
 from SpotifyApi     import SpotifyApi
-from Localization   import Localization
+from Users          import Users
 
 class SlashRequests(enum.Enum):
     Spotify         = 0
@@ -17,7 +17,7 @@ class Server:
         self.name           = "MusicBot"
         self.chat           = Chat      (appSettings)
         self.spotify        = SpotifyApi(appSettings)
-        self.localization   = Localization()
+        self.users          = Users     ()
 
     def handleAppMention(self, payload):
         channel = payload['channel' ]
@@ -25,24 +25,6 @@ class Server:
         blocks  = payload['blocks'  ]
 
         messageText = ""
-
-        #for block in blocks:
-        #    if block['type'] == 'rich_text':
-        #        elements = block['elements']
-        #        
-        #        for element in elements:
-        #            type = element['type']
-        #            
-        #            if type == 'rich_text_section':
-        #                subElements = element['elements']
-        #                
-        #                for subElement in subElements:
-        #                    subType = subElement['type']
-        #                    
-        #                    if subType == 'text':
-        #                        messageText = subElement['text']
-        #                    elif subType == 'link':
-        #                        messageLink = subElement['url']
 
         displayName = self.chat.getDisplayName(userId)
         
@@ -72,11 +54,12 @@ class Server:
         for url in urls:
             success = self.spotify.postSongToPlaylist(url)
 
-        #if success == True:
-        #    displayName = self.chat.getDisplayName(userId)
-        #    message     = "Hello @" + displayName + ", I have archived this song for you! You can find the link using the /spotify command!"
-        #    status      = self.chat.sendMessage     (channel, message)
-
+        #if success == True and self.users.doesUserExist(userId) == False:
+            #displayName = self.chat.getDisplayName(userId)
+            #message     = "Hello @" + displayName + ", I saw this was your first time posting since I have been active. I have archived this song for you! You can find the link using the /spotify command!"
+            #status      = self.chat.sendMessage     (channel, message)
+            
+            #self.users.addExistingUser(userId)
 
     def handleSlashRequest(self, slashType):
         response                = {}

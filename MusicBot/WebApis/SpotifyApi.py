@@ -1,4 +1,5 @@
 from AppSettings import AppSettings
+from Playlist    import Playlist
 
 import requests
 import enum
@@ -10,13 +11,40 @@ class ErrorCodes(enum.Enum):
 
 class SpotifyApi():
     def __init__(self, appSettings):
-        self.baseUrl            = "https://api.spotify.com/v1/"
-        self.appSettings        = appSettings
-        self.existingTracks     = {}
-        self.existingPlaylists  = {}
-        self.existingAlbums     = {}
+        self.baseUrl     = "https://api.spotify.com/v1/"
+        self.appSettings = appSettings
 
-        self.getExisitingTracks();
+        existingTracks = self.getExisitingTracks();
+
+        self.playlist = Playlist(existingTracks)
+
+    def getExisitingTracks(self):
+        existingTracks = {}
+
+        requestUrl = self.baseUrl + "playlists/" + self.appSettings.spotifyPlaylistId + '/tracks'
+        headers    = { "Authorization" : "Bearer " + self.appSettings.spotifyAccessToken }
+
+        responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
+
+        if 'error' in responseJson:
+            message = responseJson["error"]["message"]
+
+            if message == "The access token expired":
+                self.refreshAccessCode()
+                headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
+
+                responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
+
+                if 'error' in responseJson:
+                    return existingTracks
+
+        for item in responseJson["items"]:
+            if "track" not in item:
+                continue
+
+            existingTracks[item["track"]["id"]] = True
+
+        return existingTracks
 
     def postSongToPlaylist(self, urlString):
         trackString     = "track"
@@ -46,7 +74,7 @@ class SpotifyApi():
         songInfoList    = songInfo.split('?')
         songId          = songInfoList[0]
 
-        if songId in self.existingTracks:
+        if self.playlist.doesTrackExist(songId):
             return False
 
         requestUrl  = self.baseUrl + "playlists/" + self.appSettings.spotifyPlaylistId + '/tracks/'
@@ -68,7 +96,7 @@ class SpotifyApi():
                 if 'error' in responseJson:
                     return False
 
-        self.existingTracks[songId] = True
+        self.playlist.addExistingTrack(songId)
 
         return True
 
@@ -77,7 +105,7 @@ class SpotifyApi():
         playlistInfoList    = playlistInfo.split('?')
         playlistId          = playlistInfoList[0]
 
-        if playlistId in self.existingPlaylists:
+        if self.playlist.doesPlaylistExist(playlistId):
             return False
 
         requestUrl  = self.baseUrl + "playlists/" + playlistId
@@ -113,12 +141,12 @@ class SpotifyApi():
             if "popularity" not in track or "id" not in track:
                     continue
 
-            if track["id"] not in self.existingTracks:
+            if self.playlist.doesTrackExist(track["id"]) == False:
                 mostPopularTracks.put( (-int(track["popularity"]), track["id"]) )
 
         self.postMostPopularTracks(mostPopularTracks)
 
-        self.existingPlaylists[playlistId] = True
+        self.playlist.addExistingPlaylist(playlistId)
         
         return True
 
@@ -127,7 +155,7 @@ class SpotifyApi():
         albumInfoList    = albumInfo.split('?')
         albumId          = albumInfoList[0]
 
-        if albumId in self.existingAlbums:
+        if self.playlist.doesAlbumExist(albumId):
             return False
 
         albumJson        = self.getAlbumInfo(albumId)
@@ -151,15 +179,14 @@ class SpotifyApi():
             if "popularity" not in trackInfo:
                 continue
 
-            if trackInfo["id"] not in self.existingTracks:
-                print(str(trackInfo["popularity"]) + " " + str(trackInfo["track_number"]) + "\n")
+            if self.playlist.doesTrackExist(trackInfo["id"]) == False:
                 mostPopularTracks.put( (-int(trackInfo["popularity"]), trackInfo["id"]) )
         
         count = 0
         
         self.postMostPopularTracks(mostPopularTracks)
         
-        self.existingAlbums[albumId] = True
+        self.playlist.addExistingAlbum(albumId)
 
         return True
 
@@ -218,7 +245,7 @@ class SpotifyApi():
             responseJson = json.loads(requests.post(requestUrl, json=requestData, headers=headers).text)
             
             if 'error' not in responseJson:
-                self.existingTracks[trackId] = True
+                self.playlist.addExistingTrack(trackId)
             
             count += 1
 

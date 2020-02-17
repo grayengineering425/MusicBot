@@ -127,3 +127,6 @@ oath.ini
 bot_playground.py
 spotify_api_reference.txt
 musicbot_env/
+MusicBot/Data/albums.txt
+MusicBot/Data/playlists.txt
+MusicBot/Data/users.txt

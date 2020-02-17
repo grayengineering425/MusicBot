@@ -5,6 +5,7 @@ import datetime
 sys.path.append(os.getcwd() + '/Settings'       )
 sys.path.append(os.getcwd() + '/WebApis'        )
 sys.path.append(os.getcwd() + '/Localization'   )
+sys.path.append(os.getcwd() + '/Data'           )
 
 from flask          import Flask, request, jsonify
 from flask_cors     import CORS
