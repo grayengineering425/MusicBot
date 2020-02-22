@@ -34,7 +34,8 @@ class Server:
         status      = self.chat.sendMessage     (channel, message)
 
     def handleLinkPosted(self, payload):
-        self.checkLastPostDate()
+        if self.checkLastPostDate() == False:
+            return
 
         channel = payload['channel' ]
         userId  = payload['user'    ]
@@ -74,10 +75,17 @@ class Server:
             #create new playlist
             newPlaylistId, newPlaylistLink = self.spotify.createNewPlaylist()
 
-            #reset last date in app settings
-            self.appSettings.updateSetting("SPOTIFY", "playlistId",     newPlaylistId)
-            self.appSettings.updateSetting("SPOTIFY", "playlistLink",   newPlaylistLink)
-            self.appSettings.updateSetting("SPOTIFY", "lastPostDate",   todayString)
+            
+            if newPlaylistId != "" and newPlaylistLink != "":
+                #reset last date in app settings
+                self.appSettings.updateSetting("SPOTIFY", "playlistId",     newPlaylistId)
+                self.appSettings.updateSetting("SPOTIFY", "playlistLink",   newPlaylistLink)
+                self.appSettings.updateSetting("SPOTIFY", "lastPostDate",   todayString)
+
+                return True
+
+            else:
+                return False
 
     def handleSlashRequest(self, slashType):
         response                = {}
