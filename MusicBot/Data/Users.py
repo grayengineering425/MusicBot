@@ -12,7 +12,7 @@ class Users():
 
     def addExistingUser(self, userId):
         with open(self.existingUserFile, "a") as userFile:
-            userFile.write(userId)
+            userFile.write(userId + "\n")
     
         self.existingUsers[userId] = True
     

@@ -6,6 +6,8 @@ import enum
 import json
 import queue
 
+from datetime import datetime
+
 class ErrorCodes(enum.Enum):
     TokenExpired = "The access token expired"
 
@@ -120,7 +122,7 @@ class SpotifyApi():
                 self.refreshAccessCode()
                 headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
             
-                responseJson = json.loads(requests.post(requestUrl, json=requestData, headers=headers).text)
+                responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
             
                 if 'error' in responseJson:
                     return False
@@ -203,7 +205,7 @@ class SpotifyApi():
                 self.refreshAccessCode()
                 headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
             
-                responseJson = json.loads(requests.post(requestUrl, json=requestData, headers=headers).text)
+                responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
             
                 if 'error' in responseJson:
                     return None
@@ -223,7 +225,7 @@ class SpotifyApi():
                 self.refreshAccessCode()
                 headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
             
-                responseJson = json.loads(requests.post(requestUrl, json=requestData, headers=headers).text)
+                responseJson = json.loads(requests.get(requestUrl, headers=headers).text)
             
                 if 'error' in responseJson:
                     return None
@@ -248,6 +250,43 @@ class SpotifyApi():
                 self.playlist.addExistingTrack(trackId)
             
             count += 1
+
+    def createNewPlaylist(self):
+        newPlaylistId   = ""
+        newPlaylistLink = ""
+
+        requestUrl  = self.baseUrl + "users/" + self.appSettings.spotifyUserId + '/playlists'
+        
+        headers     = { "Authorization" : "Bearer " + self.appSettings.spotifyAccessToken }
+
+        today           = datetime.today()
+        playlistName    = "Spirit1053 " + today.strftime("%B") + ", " + str(today.year)
+
+        data        =  { "name" : playlistName }
+
+        responseJson = json.loads(requests.post(requestUrl, json=data, headers=headers).text)
+
+        if 'error' in responseJson:
+            message = responseJson["error"]["message"]
+
+            if message == "The access token expired":
+                self.refreshAccessCode()
+                headers     ["Authorization"] = "Bearer " + self.appSettings.spotifyAccessToken
+
+                responseJson = json.loads(requests.post(requestUrl, json=data, headers=headers).text)
+
+                if 'error' in responseJson:
+                    return newPlaylistId, newPlaylistLink
+
+        if "id" in responseJson:
+            newPlaylistId = responseJson["id"]
+
+        if "external_urls" in responseJson and "spotify" in responseJson["external_urls"]:
+            newPlaylistLink = responseJson["external_urls"]["spotify"]
+
+        self.playlist.reset()
+
+        return newPlaylistId, newPlaylistLink
 
 
     def refreshAccessCode(self):

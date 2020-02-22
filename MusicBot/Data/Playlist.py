@@ -24,15 +24,15 @@ class Playlist():
     
     def addExistingPlaylist(self, playlistId):
         with open(self.existingPlaylistFile, "a") as playlistFile:
-            playlistFile.write(playlistId)
+            playlistFile.write(playlistId + "\n")
             
             self.existingPlaylists[playlistId] = True
     
     def addExistingAlbum(self, albumId):
         with open(self.existingAlbumFile, "a") as albumFile:
-            albumFile.write(albumId)
+            albumFile.write(albumId + "\n")
     
-        self.existingAlbums[albumId] = True
+            self.existingAlbums[albumId] = True
     
     def addExistingTrack(self, trackId):
         self.existingTracks[trackId] = True
@@ -44,5 +44,12 @@ class Playlist():
         return albumId in self.existingAlbums
     
     def doesTrackExist(self, trackId):
-        print(trackId)
         return trackId in self.existingTracks
+
+    def reset(self):
+        self.existingTracks     = {}
+        self.existingAlbums     = {}
+        self.existingPlaylists  = {}
+
+        open(self.existingAlbumFile,    'w').close()
+        open(self.existingPlaylistFile, 'w').close()

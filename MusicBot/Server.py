@@ -1,6 +1,8 @@
 import requests
 import enum
 
+from datetime import datetime
+
 from Chat           import Chat, Emoji
 from AppSettings    import AppSettings
 from SpotifyApi     import SpotifyApi
@@ -28,10 +30,12 @@ class Server:
 
         displayName = self.chat.getDisplayName(userId)
         
-        message     = "Hello @" + displayName + ", nice to meet you! Use /musicbotinfo to learn more about me!"
+        message     = "Hello " + displayName + ", nice to meet you! Use /musicbotinfo to learn more about me!"
         status      = self.chat.sendMessage     (channel, message)
 
     def handleLinkPosted(self, payload):
+        self.checkLastPostDate()
+
         channel = payload['channel' ]
         userId  = payload['user'    ]
 
@@ -56,10 +60,24 @@ class Server:
 
         #if success == True and self.users.doesUserExist(userId) == False:
             #displayName = self.chat.getDisplayName(userId)
-            #message     = "Hello @" + displayName + ", I saw this was your first time posting since I have been active. I have archived this song for you! You can find the link using the /spotify command!"
+            #message     = "Hello " + displayName + ", I saw this was your first time posting since I have been active. I have archived this song for you! You can find the link using the /spotify command!"
             #status      = self.chat.sendMessage     (channel, message)
             
             #self.users.addExistingUser(userId)
+
+    def checkLastPostDate(self):
+        today = datetime.today()
+
+        if today.month != self.appSettings.spotifyLastPostDate.month:
+            todayString = str(today.day) + "-" + str(today.month) + "-" + str(today.year)
+
+            #create new playlist
+            newPlaylistId, newPlaylistLink = self.spotify.createNewPlaylist()
+
+            #reset last date in app settings
+            self.appSettings.updateSetting("SPOTIFY", "playlistId",     newPlaylistId)
+            self.appSettings.updateSetting("SPOTIFY", "playlistLink",   newPlaylistLink)
+            self.appSettings.updateSetting("SPOTIFY", "lastPostDate",   todayString)
 
     def handleSlashRequest(self, slashType):
         response                = {}

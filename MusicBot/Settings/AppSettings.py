@@ -1,10 +1,11 @@
 import configparser
 import sys
 import os
+import datetime
 
 class AppSettings():
     def __init__(self):
-        self.oathConfigPath = os.getcwd() + "/Settings/oath.ini"
+        self.oathConfigPath = os.getcwd() + "/Settings/BotSettings.ini"
 
         self.oathConfig = configparser.ConfigParser()
         self.oathConfig.read( self.oathConfigPath)
@@ -34,6 +35,9 @@ class AppSettings():
         self.spotifyUserId           = self.oathConfig["SPOTIFY"]["userId"       ]
         self.spotifyPlaylistId       = self.oathConfig["SPOTIFY"]["playlistId"   ]
         self.spotifyPlaylistLink     = self.oathConfig["SPOTIFY"]["playlistLink" ]
+        lastPostDate                 = self.oathConfig["SPOTIFY"]["lastPostDate" ]
+        
+        self.spotifyLastPostDate     = datetime.datetime.strptime(lastPostDate, "%d-%m-%Y").date()
 
         #GITHUB SETTINGS
         self.githubLink              = self.oathConfig["GITHUB" ]["link"]

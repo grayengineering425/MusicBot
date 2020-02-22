@@ -123,7 +123,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-oath.ini
+BotSettings.ini
 bot_playground.py
 spotify_api_reference.txt
 musicbot_env/
